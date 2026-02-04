@@ -1,0 +1,151 @@
+:root {
+	--bg: #0f172a;
+	--panel: #111827;
+	--text: #e5e7eb;
+	--muted: #94a3b8;
+	--primary: #10b981;
+	--primary-700: #059669;
+	--card: #1f2937;
+	--border: #334155;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+	margin: 0;
+	font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans", Ubuntu, Cantarell, "Helvetica Neue", Arial;
+	background: linear-gradient(180deg, #0b1220, #0f172a);
+	color: var(--text);
+}
+
+.container {
+	max-width: 920px;
+	margin: 0 auto;
+	padding: 24px 16px 80px;
+}
+
+.top-nav {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-bottom: 8px;
+}
+
+.top-nav a {
+	text-decoration: none;
+	font-size: 13px;
+	color: var(--muted);
+	padding: 6px 10px;
+	border-radius: 999px;
+	border: 1px solid transparent;
+	background: rgba(15, 23, 42, 0.6);
+	transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.top-nav a.active {
+	color: #eafff7;
+	border-color: var(--primary);
+	background: rgba(16, 185, 129, 0.12);
+}
+
+.top-nav a:hover {
+	color: #e5e7eb;
+	border-color: var(--border);
+	background: rgba(15, 23, 42, 0.9);
+}
+
+h1 { font-size: 28px; margin: 16px 0 20px; }
+h2 { font-size: 22px; margin: 20px 0 12px; }
+h3 { font-size: 18px; margin: 16px 0 10px; color: var(--muted); }
+
+form {
+	background: var(--panel);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	padding: 16px;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px 16px;
+}
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field.inline { grid-column: span 1; }
+.field label { font-weight: 600; }
+.field small { color: var(--muted); }
+
+input, select {
+	background: var(--card);
+	border: 1px solid var(--border);
+	color: var(--text);
+	padding: 10px 12px;
+	border-radius: 8px;
+	outline: none;
+}
+
+button.primary {
+	grid-column: span 2;
+	padding: 12px 16px;
+	border-radius: 10px;
+	background: var(--primary);
+	color: #062a23;
+	font-weight: 700;
+	border: none;
+	cursor: pointer;
+}
+button.primary:hover { background: var(--primary-700); color: #eafff7; }
+
+.results { margin-top: 18px; }
+.hidden { display: none; }
+
+.cards {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 12px;
+}
+.card {
+	background: var(--card);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	padding: 14px 16px;
+}
+.card .label { color: var(--muted); font-size: 13px; }
+.card .value { font-size: 22px; font-weight: 800; margin-top: 8px; }
+
+.table-wrapper { overflow: auto; border: 1px solid var(--border); border-radius: 8px; }
+
+/* ตารางสรุปสะสมเงินรายปี */
+#schedule { width: 100%; border-collapse: collapse; }
+#schedule th, #schedule td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: right; }
+#schedule th:first-child, #schedule td:first-child { text-align: left; }
+#schedule thead { background: #0b1220; }
+
+/* ตารางถอนเงิน 50 ปี หลังหยุด DCA ให้มีเส้นตารางชัดขึ้น */
+#withdrawSchedule { width: 100%; border-collapse: collapse; }
+#withdrawSchedule th,
+#withdrawSchedule td {
+	padding: 10px 12px;
+	border: 1px solid var(--border);
+	text-align: right;
+}
+#withdrawSchedule th:first-child,
+#withdrawSchedule td:first-child {
+	text-align: left;
+}
+#withdrawSchedule thead {
+	background: linear-gradient(90deg, #0b1220, #020617);
+}
+#withdrawSchedule tbody tr:nth-child(even) {
+	background: rgba(15, 23, 42, 0.7);
+}
+#withdrawSchedule tbody tr:hover {
+	background: rgba(15, 23, 42, 1);
+}
+
+footer { margin-top: 16px; color: var(--muted); }
+
+@media (max-width: 720px) {
+	form { grid-template-columns: 1fr; }
+	button.primary { grid-column: span 1; }
+	.cards { grid-template-columns: 1fr; }
+}
+

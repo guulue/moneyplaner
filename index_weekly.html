@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="th">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>คำนวณดอกเบี้ยทบต้น (DCA รายสัปดาห์) + ตารางถอนเงิน 50 ปี</title>
+	<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+	<div class="container">
+		<nav class="top-nav">
+			<a href="index.html">โหมดดอกเบี้ยคงที่ (DCA รายเดือน)</a>
+			<a href="index_random.html">โหมดดอกเบี้ยสุ่มรายปี</a>
+			<a href="index_weekly.html" class="active">โหมด DCA รายสัปดาห์</a>
+		</nav>
+
+		<h1>คำนวณดอกเบี้ยทบต้น (DCA รายสัปดาห์) และตารางถอนเงิน 50 ปี</h1>
+
+		<form id="calculatorForm">
+			<div class="field">
+				<label for="principal">เงินตั้งต้น (บาท)</label>
+				<input type="number" id="principal" min="0" step="0.01" placeholder="เช่น 100000" required>
+			</div>
+
+			<div class="field">
+				<label for="rate">อัตราดอกเบี้ยต่อปี (%)</label>
+				<input type="number" id="rate" min="0" step="0.01" placeholder="เช่น 5" required>
+			</div>
+
+			<div class="field">
+				<label for="n">จำนวนครั้งที่ทบต่อปี</label>
+				<select id="n" required>
+					<option value="1">ปีละครั้ง (1)</option>
+					<option value="4">ไตรมาสละครั้ง (4)</option>
+					<option value="12" selected>เดือนละครั้ง (12)</option>
+					<option value="52">สัปดาห์ละครั้ง (52)</option>
+					<option value="365">รายวัน (365)</option>
+				</select>
+			</div>
+
+			<div class="field">
+				<label for="contribution">เติมเงินประจำ (ต่อสัปดาห์) บาท</label>
+				<input type="number" id="contribution" min="0" step="0.01" placeholder="ไม่เติมให้ใส่ 0" value="0">
+				<small>คำนวณว่าเติมทุกสัปดาห์ปลายงวด</small>
+			</div>
+
+			<div class="field inline">
+				<label for="years">ระยะเวลา DCA / สะสมเงิน (ปี)</label>
+				<input type="number" id="years" min="1" max="50" value="10" required>
+			</div>
+
+			<div class="field inline">
+				<label for="withdrawRate">เปอร์เซ็นต์ถอนต่อปี หลังหยุด DCA (%)</label>
+				<input type="number" id="withdrawRate" min="0" max="100" step="0.01" value="4">
+				<small>ใช้ถอนเป็นเปอร์เซ็นต์ของพอร์ตต่อปี หลังครบระยะเวลา DCA โดยไม่มีการเติมเงินเพิ่มอีก</small>
+			</div>
+
+			<button type="submit" class="primary">คำนวณ (DCA รายสัปดาห์)</button>
+		</form>
+
+		<section id="results" class="results hidden">
+			<h2>ผลการคำนวณ</h2>
+			<div class="cards">
+				<div class="card">
+					<div class="label">มูลค่าในอนาคต</div>
+					<div id="fv" class="value">-</div>
+				</div>
+				<div class="card">
+					<div class="label">เงินต้นรวมที่ใส่</div>
+					<div id="totalContrib" class="value">-</div>
+				</div>
+				<div class="card">
+					<div class="label">ดอกเบี้ยที่ได้รับ</div>
+					<div id="interestEarned" class="value">-</div>
+				</div>
+				<div class="card">
+					<div class="label">รวมเงินที่ถอนได้ใน 50 ปี</div>
+					<div id="totalWithdrawn" class="value">-</div>
+				</div>
+			</div>
+
+			<h3>ตารางสรุปรายปี (DCA รายสัปดาห์)</h3>
+			<div class="table-wrapper">
+				<table id="schedule">
+					<thead>
+						<tr>
+							<th>ปี</th>
+							<th>เงินต้นสะสม (บาท)</th>
+							<th>ดอกเบี้ยสะสม (บาท)</th>
+							<th>ยอดรวมปลายปี (บาท)</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</div>
+
+			<h3>ตารางถอนเงิน 50 ปี หลังหยุด DCA</h3>
+			<div class="table-wrapper">
+				<table id="withdrawSchedule">
+					<thead>
+						<tr>
+							<th>ปี (นับจากปีแรกเริ่มลงทุน)</th>
+							<th>ยอดต้นปีก่อนถอน (บาท)</th>
+							<th>ยอดถอนต่อปี (บาท)</th>
+							<th>ยอดถอนต่อเดือน (บาท)</th>
+							<th>ยอดคงเหลือปลายปี (บาท)</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</div>
+		</section>
+
+		<footer>
+			<small>สูตรดอกเบี้ยทบต้น รายสัปดาห์: ใช้อัตราดอกเบี้ยเทียบเท่า 52 สัปดาห์ต่อปี และถอนแบบรายปีเหมือนเดิม</small>
+		</footer>
+	</div>
+
+	<script src="script-weekly.js"></script>
+</body>
+</html>
+
