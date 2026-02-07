@@ -7,8 +7,12 @@
 	const scheduleBody = document.querySelector('#schedule tbody');
 	const withdrawScheduleBody = document.querySelector('#withdrawSchedule tbody');
 	const totalWithdrawnEl = document.getElementById('totalWithdrawn');
+	const exportPdfBtn = document.getElementById('exportPdfBtn');
 
 	const fmt = new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 2 });
+
+	let lastOutput = null;
+	let lastParams = null;
 
 	function parsePositiveNumber(input) {
 		const value = Number(input.value);
@@ -136,6 +140,9 @@
 			withdrawRatePercent
 		});
 
+		lastOutput = output;
+		lastParams = { principal, rate, n, contribution, years, withdrawRatePercent };
+
 		fvEl.textContent = fmt.format(output.futureValue);
 		totalContribEl.textContent = fmt.format(output.totalContribution);
 		interestEarnedEl.textContent = fmt.format(output.interestEarned);
@@ -144,5 +151,122 @@
 		renderWithdrawSchedule(output.withdrawSchedule || []);
 		resultsEl.classList.remove('hidden');
 	});
+
+	function exportToPdf() {
+		if (!lastOutput || !lastParams) return;
+		exportPdfBtn.disabled = true;
+		exportPdfBtn.textContent = 'กำลังสร้าง PDF...';
+
+		const doExport = function () {
+			const opt = {
+				margin: 12,
+				filename: 'รายงานแผนเกษียณ_' + new Date().toISOString().slice(0, 10) + '.pdf',
+				image: { type: 'jpeg', quality: 0.98 },
+				html2canvas: { scale: 2 },
+				jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+			};
+			const report = buildPdfReport();
+			const el = document.createElement('div');
+			el.innerHTML = report;
+			el.style.position = 'absolute';
+			el.style.left = '-9999px';
+			el.style.width = '210mm';
+			document.body.appendChild(el);
+			html2pdf().set(opt).from(el).save().then(function () {
+				document.body.removeChild(el);
+			}).finally(function () {
+				exportPdfBtn.disabled = false;
+				exportPdfBtn.textContent = 'Export รายงานแผนเกษียณ (PDF)';
+			});
+		};
+
+		if (document.fonts && document.fonts.ready) {
+			document.fonts.ready.then(doExport);
+		} else {
+			doExport();
+		}
+	}
+
+	function buildPdfReport() {
+		const p = lastParams;
+		const o = lastOutput;
+		const compoundLabels = { 1: 'ปีละครั้ง', 4: 'ไตรมาสละครั้ง', 12: 'เดือนละครั้ง', 365: 'รายวัน' };
+
+		let scheduleRows = '';
+		(o.schedule || []).forEach(function (r) {
+			scheduleRows += '<tr><td>' + r.year + '</td><td style="text-align:right">' + fmt.format(r.totalContribution) + '</td><td style="text-align:right">' + fmt.format(r.interestEarned) + '</td><td style="text-align:right">' + fmt.format(r.endingBalance) + '</td></tr>';
+		});
+
+		let withdrawRows = '';
+		(o.withdrawSchedule || []).forEach(function (r) {
+			withdrawRows += '<tr><td>' + r.yearFromStart + '</td><td style="text-align:right">' + fmt.format(r.startOfYearBalance) + '</td><td style="text-align:right">' + fmt.format(r.withdrawAmount) + '</td><td style="text-align:right">' + fmt.format(r.monthlyWithdraw) + '</td><td style="text-align:right">' + fmt.format(r.endingBalance) + '</td></tr>';
+		});
+
+		const dateStr = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+
+		return `
+		<div class="pdf-report" style="font-family: 'Sarabun', 'Segoe UI', sans-serif; color: #1e293b; padding: 16px; background: #fff;">
+			<style>
+				.pdf-report h1 { font-size: 22px; color: #0f172a; margin: 0 0 4px 0; border-bottom: 3px solid #10b981; padding-bottom: 8px; }
+				.pdf-report .meta { color: #64748b; font-size: 12px; margin-bottom: 20px; }
+				.pdf-report h2 { font-size: 16px; color: #334155; margin: 20px 0 10px 0; }
+				.pdf-report .params { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; }
+				.pdf-report .params table { width: 100%; font-size: 13px; }
+				.pdf-report .params td { padding: 4px 8px; }
+				.pdf-report .params td:first-child { color: #64748b; width: 45%; }
+				.pdf-report .cards { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+				.pdf-report .card { background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 1px solid #a7f3d0; border-radius: 10px; padding: 14px 18px; min-width: 140px; }
+				.pdf-report .card .label { font-size: 11px; color: #047857; }
+				.pdf-report .card .value { font-size: 18px; font-weight: 700; color: #065f46; }
+				.pdf-report table.data { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px; }
+				.pdf-report table.data th, .pdf-report table.data td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: right; }
+				.pdf-report table.data th { background: #0f172a; color: #f8fafc; font-weight: 600; }
+				.pdf-report table.data th:first-child, .pdf-report table.data td:first-child { text-align: left; }
+				.pdf-report table.data tr:nth-child(even) { background: #f8fafc; }
+			</style>
+			<h1>รายงานแผนเกษียณ</h1>
+			<p class="meta">จัดทำเมื่อ ${dateStr} | โหมดดอกเบี้ยคงที่ (DCA รายเดือน)</p>
+
+			<h2>พารามิเตอร์ที่ใช้</h2>
+			<div class="params">
+				<table>
+					<tr><td>เงินตั้งต้น (บาท)</td><td>${fmt.format(p.principal)}</td></tr>
+					<tr><td>อัตราดอกเบี้ยต่อปี (%)</td><td>${p.rate}%</td></tr>
+					<tr><td>การทบต้น</td><td>${compoundLabels[p.n] || p.n + ' ครั้ง/ปี'}</td></tr>
+					<tr><td>เติมเงินประจำต่อเดือน (บาท)</td><td>${fmt.format(p.contribution)}</td></tr>
+					<tr><td>ระยะเวลา DCA / สะสมเงิน (ปี)</td><td>${p.years} ปี</td></tr>
+					<tr><td>เปอร์เซ็นต์ถอนต่อปีหลังหยุด DCA (%)</td><td>${p.withdrawRatePercent}%</td></tr>
+				</table>
+			</div>
+
+			<h2>สรุปผลการคำนวณ</h2>
+			<div class="cards">
+				<div class="card"><div class="label">มูลค่าในอนาคต (หลังสะสมครบ)</div><div class="value">${fmt.format(o.futureValue)}</div></div>
+				<div class="card"><div class="label">เงินต้นรวมที่ใส่</div><div class="value">${fmt.format(o.totalContribution)}</div></div>
+				<div class="card"><div class="label">ดอกเบี้ยที่ได้รับ</div><div class="value">${fmt.format(o.interestEarned)}</div></div>
+				<div class="card"><div class="label">รวมเงินที่ถอนได้ใน 50 ปี</div><div class="value">${fmt.format(o.totalWithdrawn || 0)}</div></div>
+			</div>
+
+			<h2>ตารางสรุปรายปี (ช่วงสะสม DCA)</h2>
+			<table class="data">
+				<thead><tr><th>ปี</th><th>เงินต้นสะสม (บาท)</th><th>ดอกเบี้ยสะสม (บาท)</th><th>ยอดรวมปลายปี (บาท)</th></tr></thead>
+				<tbody>${scheduleRows}</tbody>
+			</table>
+
+			<h2>ตารางถอนเงิน 50 ปี หลังหยุด DCA</h2>
+			<table class="data">
+				<thead><tr><th>ปี</th><th>ยอดต้นปีก่อนถอน (บาท)</th><th>ยอดถอนต่อปี (บาท)</th><th>ยอดถอนต่อเดือน (บาท)</th><th>ยอดคงเหลือปลายปี (บาท)</th></tr></thead>
+				<tbody>${withdrawRows}</tbody>
+			</table>
+
+			<p style="font-size: 10px; color: #94a3b8;">สูตร: FV = P(1 + r/n)^(nt) + PMT × [((1 + r/n)^(nt) - 1) / (r/n)]</p>
+		</div>`;
+	}
+
+	if (exportPdfBtn) {
+		exportPdfBtn.addEventListener('click', function () {
+			exportToPdf();
+		});
+	}
 })();
 

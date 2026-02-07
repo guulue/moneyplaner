@@ -95,6 +95,30 @@ button.primary {
 button.primary:hover { background: var(--primary-700); color: #eafff7; }
 
 .results { margin-top: 18px; }
+.results-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-bottom: 16px;
+}
+.results-header h2 { margin: 0; }
+.btn-export-pdf {
+	padding: 10px 18px;
+	border-radius: 10px;
+	background: linear-gradient(135deg, #1e40af, #3b82f6);
+	color: #fff;
+	font-weight: 600;
+	font-size: 14px;
+	border: none;
+	cursor: pointer;
+	transition: background 0.2s ease, transform 0.1s ease;
+}
+.btn-export-pdf:hover {
+	background: linear-gradient(135deg, #1d4ed8, #2563eb);
+	transform: translateY(-1px);
+}
 .hidden { display: none; }
 
 .cards {
