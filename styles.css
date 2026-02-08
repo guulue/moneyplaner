@@ -166,6 +166,22 @@ button.primary:hover { background: var(--primary-700); color: #eafff7; }
 }
 
 footer { margin-top: 16px; color: var(--muted); }
+footer > small { display: block; margin-bottom: 20px; }
+.donate-box {
+	background: rgba(16, 185, 129, 0.08);
+	border: 1px solid var(--primary);
+	border-radius: 12px;
+	padding: 16px 20px;
+	margin-top: 12px;
+}
+.donate-text { margin: 0 0 8px 0; font-size: 14px; line-height: 1.5; }
+.donate-cta { margin: 8px 0; font-size: 15px; }
+.donate-link { color: var(--primary); font-weight: 600; text-decoration: none; }
+.donate-link:hover { text-decoration: underline; }
+.donate-note { margin: 4px 0; font-size: 13px; color: var(--muted); }
+.donate-note-small { margin: 4px 0 12px 0; font-size: 12px; color: var(--muted); opacity: 0.9; }
+.donate-img-link { display: inline-block; line-height: 0; }
+.donate-img { max-width: 400px; height: auto; border-radius: 8px; }
 
 @media (max-width: 720px) {
 	form { grid-template-columns: 1fr; }
