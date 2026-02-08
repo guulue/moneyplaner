@@ -158,32 +158,46 @@
 		exportPdfBtn.textContent = 'กำลังสร้าง PDF...';
 
 		const doExport = function () {
-			const opt = {
-				margin: 12,
-				filename: 'รายงานแผนเกษียณ_' + new Date().toISOString().slice(0, 10) + '.pdf',
-				image: { type: 'jpeg', quality: 0.98 },
-				html2canvas: { scale: 2 },
-				jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-			};
 			const report = buildPdfReport();
 			const el = document.createElement('div');
 			el.innerHTML = report;
-			el.style.position = 'absolute';
-			el.style.left = '-9999px';
-			el.style.width = '210mm';
+			el.style.cssText = 'position:fixed;top:0;left:0;z-index:99999;width:794px;max-width:100vw;background:#fff;overflow:auto;';
 			document.body.appendChild(el);
-			html2pdf().set(opt).from(el).save().then(function () {
-				document.body.removeChild(el);
+			el.scrollIntoView({ behavior: 'instant' });
+
+			const filename = 'รายงานแผนเกษียณ_' + new Date().toISOString().slice(0, 10) + '.pdf';
+			const margin = 10;
+			const scale = 2;
+
+			html2canvas(el, {
+				scale: scale,
+				useCORS: true,
+				allowTaint: true,
+				logging: false
+			}).then(function (canvas) {
+				const imgData = canvas.toDataURL('image/jpeg', 0.95);
+				const imgWidth = 210 - margin * 2;
+				const imgHeight = (canvas.height * imgWidth) / canvas.width;
+				const pdf = new jspdf.jsPDF({
+					orientation: 'portrait',
+					unit: 'mm',
+					format: [210, imgHeight + margin * 2]
+				});
+				pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
+				pdf.save(filename);
+			}).catch(function (err) {
+				console.error(err);
 			}).finally(function () {
+				document.body.removeChild(el);
 				exportPdfBtn.disabled = false;
 				exportPdfBtn.textContent = 'Export รายงานแผนเกษียณ (PDF)';
 			});
 		};
 
 		if (document.fonts && document.fonts.ready) {
-			document.fonts.ready.then(doExport);
+			document.fonts.ready.then(function () { setTimeout(doExport, 50); });
 		} else {
-			doExport();
+			setTimeout(doExport, 50);
 		}
 	}
 
